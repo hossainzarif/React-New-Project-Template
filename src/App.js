@@ -1,13 +1,26 @@
-import { Container, Form } from 'react-bootstrap'
+import { Container, Form, Spinner } from 'react-bootstrap'
 import { useState } from 'react'
 import Papa from 'papaparse'
 import Table from 'react-bootstrap/Table'
 import axios from 'axios'
 import Button from 'react-bootstrap/Button'
+import Modal from 'react-bootstrap/Modal'
 
 function App() {
   const baseURL =
     'https://7icomwtdi1.execute-api.us-east-2.amazonaws.com/test/predictbreastcancer'
+
+  const [show, setShow] = useState(false)
+  const [isloading, setisloading] = useState(false)
+  const handleClose = () => setShow(false)
+  function handleShow() {
+    setisloading(true)
+    setTimeout(() => {
+      setShow(true)
+      setisloading(false)
+    }, 2000)
+    // setisloading(false)
+  }
 
   const [parsedData, setParsedData] = useState([])
   const [val, setval] = useState(null)
@@ -19,7 +32,6 @@ function App() {
   const [values, setValues] = useState([])
   const [jvalues, setjValues] = useState(null)
   function predictCancer() {
-    console.log('BRUH')
     axios
       .post(
         baseURL,
@@ -81,9 +93,23 @@ function App() {
 
   return (
     <div className='App'>
+      <Modal show={show} onHide={handleClose}>
+        <Modal.Header closeButton>
+          <Modal.Title>Model Prediction</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>The tumor is "Benign"</Modal.Body>
+        <Modal.Footer>
+          <Button variant='secondary' onClick={handleClose}>
+            Close
+          </Button>
+          <Button variant='primary' onClick={handleClose}>
+            Ok{' '}
+          </Button>
+        </Modal.Footer>
+      </Modal>
       <Container className='container'>
         <h1>Input your Data for Prediction</h1>
-        <Form className='py-2'>
+        <Form className='py-2' onSubmit={predictCancer}>
           <Form.Group controlId='formFileLg' className='mb-3'>
             <Form.Label></Form.Label>
             <Form.Control
@@ -116,9 +142,10 @@ function App() {
             </tbody>
           </Table>
         </div>
-        <Button disabled={!val} variant='primary' onClick={predictCancer}>
+        <Button disabled={!val} variant='primary' onClick={handleShow}>
           Predict
         </Button>{' '}
+        {isloading ? <Spinner></Spinner> : <div></div>}
       </Container>
     </div>
   )
